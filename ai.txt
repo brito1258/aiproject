@@ -1,0 +1,95 @@
+#blinking with gpiozero library
+from gpiozero import LED
+from gpiozero import DistanceSensor
+from gpiozero import Servo
+from gpiozero import AngularServo
+from time import sleep
+from gpiozero.pins.pigpio import PiGPIOFactory
+from gpiozero import MCP3008
+divider= MCP3008(0)
+
+n=15;c=0;
+factory = PiGPIOFactory()
+led = LED(23)
+led1 = LED(24)
+sensor = DistanceSensor(echo=18, trigger=25,pin_factory=factory)
+servo = Servo(12,min_pulse_width=0.5/1000,max_pulse_width=2.5/1000,pin_factory=factory)
+def forward():
+    led.on()
+    led1.on()
+    print('LED ON')
+    sleep(5)
+    led.off()
+    led1.off()
+    print('LED OFF')
+def right():
+ for number in range(5):
+    led.on()
+    sleep(.5)
+    led.off()
+    sleep(.5)
+def left():
+ for number in range(10):
+    led1.on()
+    sleep(.5)
+    led1.off()
+    sleep(.5)
+def rev():
+ for number in range(5):
+    led1.on()
+    led.on()
+    sleep(.5)
+    led1.off()
+    led.off()
+    sleep(.5)
+def scan():
+  for number in range(1):
+      
+    print('Distance: ', sensor.distance * 100)
+    sleep(1)
+def motor():
+    global y;
+    servo.min()
+    print('scan  left side')
+    scan()
+    sleep(5)
+    servo.mid()
+    print('scan front side')
+    scan()    
+    y=sensor.distance*100
+    if y<n:
+     print('detect object in less than 15 cm.Current distance',y)
+    sleep(5) 
+    servo.max()
+    print('scan right side')
+    scan()
+    sleep(5)
+
+def found():
+    
+  rev()
+  right()
+  left()
+  forward()
+  right()
+    
+def check():    
+  forward()
+  motor()
+  if y<n:
+      found()
+  if y>n:
+       forward()
+       right()
+  else:
+      print('h')
+      
+while c<4:
+    print(divider.value,'1 means dark')
+    sleep(1)
+    if divider.value ==1 :
+        led.on()
+    else:
+        led.off()
+    check()
+    c+=1
